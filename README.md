@@ -25,7 +25,7 @@ The master branch is the stable integration branch and should always compile and
 
 ## Compiling BaileyOS
 
-BaileyOS is written primarily in C++. BaileyOS itself requires only the headers and libraries for your OS and window system. It does not need any additional headers for context creation APIs (WGL, GLX, EGL, NSGL, OSMesa) or rendering APIs (OpenGL, OpenGL ES, Vulkan) to enable support for them.
+BaileyOS is written primarily in Assembly/C++. BaileyOS itself requires only the headers and libraries for your OS and window system.
 
 BaileyOS supports compilation on Windows with Visual C++ 2013 and later, MinGW and MinGW-w64, on macOS with Clang and on Linux and other Unix-like systems with GCC and Clang. It will likely compile in other environments as well, but this is not regularly tested.
 
@@ -53,7 +53,7 @@ See the compatibility guide in the documentation for more information.
 
 BaileyOS itself needs only CMake 3.11 or later and the headers and libraries for your OS and window system.
 
-    getopt_port for examples with command-line options
+    nasm for compiling assembly
 
 
 ## Reporting bugs

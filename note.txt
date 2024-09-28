@@ -1,2 +1,4 @@
+bash make.sh
+
 http://www.ctyme.com/intr/int.htm
 Dragon Zap Education
