@@ -4,7 +4,7 @@ BITS 16
 start:
     mov ah, 0eh ;is command
     mov al, 'B'
-    mov bx, 0 ;screen color?
+    mov bx, 0 ;page num, unneeded?
     int 0x10 ;is interupt
 
     jmp $

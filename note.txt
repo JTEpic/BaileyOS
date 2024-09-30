@@ -2,4 +2,5 @@ bash make.sh
 qemu-system-x86_64 -hda build/boot.bin
 
 http://www.ctyme.com/intr/int.htm
+https://wiki.osdev.org/FAT
 Dragon Zap Education
