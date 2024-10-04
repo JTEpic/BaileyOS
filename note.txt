@@ -1,6 +1,12 @@
 bash make.sh
-qemu-system-x86_64 -hda build/boot.bin
+qemu-system-x86_64 -hda build/boot3.bin
+
+make
+make qemu
 
 http://www.ctyme.com/intr/int.htm
 https://wiki.osdev.org/FAT
 Dragon Zap Education
+
+Global Descriptor Table (GDT)
+https://wiki.osdev.org/Global_Descriptor_Table
