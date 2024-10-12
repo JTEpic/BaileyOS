@@ -54,6 +54,7 @@ See the compatibility guide in the documentation for more information.
 BaileyOS itself needs only CMake 3.11 or later and the headers and libraries for your OS and window system.
 
     nasm for compiling assembly
+    i686-elf (Binutils + GCC) for cross compiling C
     qemu-desktop for emulation
 
 
