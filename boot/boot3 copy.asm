@@ -7,6 +7,9 @@ DATA_OFFSET equ 0x10
 KERNEL_LOAD_SEG equ 0x1000
 KERNEL_START_ADDR equ 0x100000
 
+VIDEO_MEMORY equ 0xb8000
+WHITE_ON_BLACK equ 0x0f ; the color byte for each character
+
 _start:
     jmp short start
     nop ;no operation
@@ -28,8 +31,12 @@ main:
     mov sp, 0x7c00 ;stack pointer, setup stack
     sti ;enable interupts
 
-    mov si, message
-    call print
+    mov AH, 00h
+    mov AL, 03h
+    int 0x10
+
+    ;mov si, message
+    ;call print
 
     call load_kernel
     jmp load_PM
@@ -79,6 +86,8 @@ load_PM:
     or al, 1 ;set 1st bit to 1
     mov cr0, eax
 
+    hlt
+
     jmp CODE_OFFSET:PMmain
 
 disk_read_error:
@@ -125,6 +134,10 @@ PMmain:
     in al, 0x92
     or al, 2
     out 0x92, al
+    
+    ;mov ebx, MSG_PROT_MODE
+    ;call print_string_pm
+    ;mov word [0xb8000], 0x07690748
 
     jmp CODE_OFFSET:KERNEL_START_ADDR
 

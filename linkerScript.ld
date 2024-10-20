@@ -1,5 +1,5 @@
 ENTRY(_start)
-OUTPUT_FORMAT(binary)
+OUTPUT_FORMAT(binary) #elf32-i386
 SECTIONS
 {
     . = 0x0100000;
