@@ -8,7 +8,7 @@ OS project started september 2024
 
 ## Introduction
 
-BaileyOS is an Open Source, multi-platform game engine for OpenGL, OpenGL ES and Vulkan application development. It provides a simple, platform-independent API for creating windows, contexts and surfaces, reading input, handling events, etc.
+BaileyOS is an Open Source, multi-platform operating system. It provides a simple, platform-independent API for creating windows, contexts and surfaces, reading input, handling events, etc.
 
 BaileyOS natively supports Linux, macOS and Windows and other Unix-like systems. On Linux (both Wayland and X11 are supported.) currently X11 is supported.
 
@@ -44,14 +44,14 @@ See the contribution guide for more information.
 
 ## System requirements
 
-BaileyOS supports Windows XP and later and macOS 10.8 and later. Linux and other Unix-like systems running the X Window System are supported even without a desktop environment or modern extensions, although some features require a running window or clipboard manager. The OSMesa backend requires Mesa 6.3.
+BaileyOS supports Windows XP and later and macOS 10.8 and later. Linux and other Unix-like systems running the X Window System are supported even without a desktop environment or modern extensions, although some features require a running window or clipboard manager.
 
 See the compatibility guide in the documentation for more information.
 
 
 ## Dependencies
 
-BaileyOS itself needs only CMake 3.11 or later and the headers and libraries for your OS and window system.
+BaileyOS itself needs the folowing headers and libraries for your OS and window system.
 
     nasm for compiling assembly
     i686-elf (Binutils + GCC) for cross compiling C

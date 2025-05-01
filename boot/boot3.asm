@@ -3,6 +3,8 @@ BITS 16
 
 CODE_OFFSET equ 0x8
 DATA_OFFSET equ 0x10
+;CODE_OFFSET equ gdt_code - gdt_start
+;DATA_OFFSET equ gdt_data - gdt_start
 
 KERNEL_LOAD_SEG equ 0x1000
 KERNEL_START_ADDR equ 0x100000
@@ -27,6 +29,10 @@ main:
     mov ss, ax ;SS (Stack Segment)
     mov sp, 0x7c00 ;stack pointer, setup stack
     sti ;enable interupts
+
+    mov AH, 00h
+    mov AL, 03h
+    int 0x10
 
     mov si, message
     call print
@@ -61,10 +67,15 @@ message: db 'Bailey', 0
 ;read from disk, CHS addressing, CH DH CL, Cylinder Head Sector
 load_kernel:
     mov bx, KERNEL_LOAD_SEG
-    mov dh, 0x00
+    mov es, bx
+    mov bx, KERNEL_LOAD_OFFSET
+    ;push KERNEL_LOAD_SEG
+    ;pop es
+
+    mov dh, 0x00 ;head 0
     mov dl, 0x80 ;read from first drive
     mov cl, 0x02 ;2nd sector since first is bootload
-    mov ch, 0x00
+    mov ch, 0x00 ;cylinder 0
     mov ah, 0x02 ;read, 3 is write
     mov al, 8 ;num of sectors to read, size of kernel
     int 0x13
@@ -89,20 +100,22 @@ gdt_start:
     dd 0x0
 
     ; Code Segment Descriptor
-    dw 0xFFFF ;Limit
-    dw 0x0000 ;Base
-    db 0x00 ;Base
-    db 10011010b ;Access byte (binary)
-    db 11001111b ;Flags
-    db 0x00 ;Base
+    gdt_code:
+        dw 0xFFFF ;Limit
+        dw 0x0000 ;Base
+        db 0x00 ;Base
+        db 10011010b ;Access byte (binary)
+        db 11001111b ;Flags
+        db 0x00 ;Base
 
     ; Data Segment Descriptor
-    dw 0xFFFF ;Limit
-    dw 0x0000 ;Base
-    db 0x00 ;Base
-    db 10010010b ;Access byte (binary)
-    db 11001111b ;Flags
-    db 0x00 ;Base
+    gdt_data:
+        dw 0xFFFF ;Limit
+        dw 0x0000 ;Base
+        db 0x00 ;Base
+        db 10010010b ;Access byte (binary)
+        db 11001111b ;Flags
+        db 0x00 ;Base
 
 gdt_end:
 
@@ -110,7 +123,7 @@ gdt_descriptor:
     dw gdt_end - gdt_start - 1 ;size of gdt - 1
     dd gdt_start
 
-BITS 32
+[BITS 32]
 PMmain:
     mov ax, DATA_OFFSET
     mov ds, ax
@@ -125,8 +138,43 @@ PMmain:
     in al, 0x92
     or al, 2
     out 0x92, al
+    
+    ;mov ebx, MSG_PROT_MODE
+    ;call print_string_pm
+    ;prints Hi at beginning
+    mov dword [0xb8000], 0x07690748
+    call move_cursor_to_origin
+
+    ; Copy kernel from 0x10000 to 0x100000
+    mov esi, 0x10000  ; Source
+    mov edi, 0x100000 ; Destination
+    mov ecx, 4096     ; 8 sectors * 512 bytes = 4096 bytes
+    cld
+    rep movsb
 
     jmp CODE_OFFSET:KERNEL_START_ADDR
+
+move_cursor_to_origin:
+    ; Calculate cursor offset (0 for row=0, col=0)
+    mov ecx, 0          ; Offset = row * 80 + col = 0
+
+    ; Send high byte of cursor offset
+    mov dx, 0x3D4       ; VGA index register
+    mov al, 0x0E        ; Cursor location high register
+    out dx, al
+    mov dx, 0x3D5       ; VGA data register
+    mov al, ch          ; High byte of offset (ch = 0)
+    out dx, al
+
+    ; Send low byte of cursor offset
+    mov dx, 0x3D4
+    mov al, 0x0F        ; Cursor location low register
+    out dx, al
+    mov dx, 0x3D5
+    mov al, cl          ; Low byte of offset (cl = 0)
+    out dx, al
+
+    ret
 
 print_string_pm:
     pusha

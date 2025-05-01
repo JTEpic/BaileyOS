@@ -1,5 +1,8 @@
+goals:
+keyboard move cursor
+kernel must be copied in asm fix?
+
 bash make.sh
-make qemu
 
 make
 make qemu
