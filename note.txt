@@ -1,6 +1,8 @@
 goals:
 keyboard move cursor
-kernel must be copied in asm fix?
+
+readd ORG 0 to boot
+kernel must be copied in boot fix?
 
 bash make.sh
 

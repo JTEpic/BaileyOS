@@ -1,5 +1,5 @@
-ORG 0 ;0x7c00
-BITS 16
+ORG 0x7c00
+[BITS 16]
 
 CODE_OFFSET equ 0x8
 DATA_OFFSET equ 0x10
@@ -8,24 +8,17 @@ DATA_OFFSET equ 0x10
 
 KERNEL_LOAD_SEG equ 0x1000
 KERNEL_START_ADDR equ 0x100000
+KERNEL_LOAD_OFFSET equ 0x0000
 
-_start:
-    jmp short start
-    nop ;no operation
-
-times 33 db 0 ;bios parameter block, bios wont fill in values
+VIDEO_MEMORY equ 0xb8000
+WHITE_ON_BLACK equ 0x0f ; the color byte for each character
 
 start:
-    jmp 0x7c0:main
-
-main:
     ;register * 16 + offset (org is offset)
     cli ;clear interupts
-    mov ax, 0x7c0 ;code segment location
+    mov ax, 0x00 ;code segment location
     mov ds, ax ;DS (Data Segment)
     mov es, ax ;ES (Extra Segment)
-    
-    mov ax, 0x00
     mov ss, ax ;SS (Stack Segment)
     mov sp, 0x7c00 ;stack pointer, setup stack
     sti ;enable interupts
