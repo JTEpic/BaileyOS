@@ -1,27 +1,42 @@
 goals:
 keyboard move cursor
+64bit long mode,new compiler,qemu
+higher bit color mode
 
+flat binary to only elf,cant use static/global variables?
 readd ORG 0 to boot
-kernel must be copied in boot fix?
 
+(1)
 bash make.sh
 
+(2)
 make
 make qemu
 
+(3)
+bash debug.sh
+make clean
+
+xxd for binary data
+
 http://www.ctyme.com/intr/int.htm
+https://intermezzos.github.io/book/second-edition/vga/understanding-text-mode.html
 https://wiki.osdev.org/FAT
 Dragon Zap Education
 https://github.com/screeck/YouTube/tree/main/How_to_write_a_bootloader
+https://github.com/cfenollosa/os-tutorial
 
 Global Descriptor Table (GDT)
 https://wiki.osdev.org/Global_Descriptor_Table
+https://notisrac.github.io/FileToCArray/
 
 
 Cross Compiler:
     Put extracted tar.gz into $HOME/src:
     https://ftp.gnu.org/gnu/binutils/
     https://ftp.gnu.org/gnu/gcc/
+https://github.com/bminor/binutils-gdb
+https://github.com/gcc-mirror/gcc
 
 export PREFIX="$HOME/opt/cross"
 export TARGET=i686-elf

@@ -6,21 +6,22 @@ DATA_OFFSET equ 0x10
 ;CODE_OFFSET equ gdt_code - gdt_start
 ;DATA_OFFSET equ gdt_data - gdt_start
 
-KERNEL_LOAD_SEG equ 0x1000
-KERNEL_START_ADDR equ 0x100000
+KERNEL_LOAD_SEG equ 0x1000 ;4096
 KERNEL_LOAD_OFFSET equ 0x0000
+KERNEL_LOAD equ 0x10000 ;65536
+KERNEL_START_ADDR equ 0x100000 ;1048576
 
 VIDEO_MEMORY equ 0xb8000
 WHITE_ON_BLACK equ 0x0f ; the color byte for each character
 
 start:
-    ;register * 16 + offset (org is offset)
+    ;(register or segment) * 16 + offset (org is offset)
     cli ;clear interupts
     mov ax, 0x00 ;code segment location
     mov ds, ax ;DS (Data Segment)
     mov es, ax ;ES (Extra Segment)
     mov ss, ax ;SS (Stack Segment)
-    mov sp, 0x7c00 ;stack pointer, setup stack
+    mov sp, 0x7c00 ;stack pointer, setup stack, grows downwards, 31744
     sti ;enable interupts
 
     mov AH, 00h
@@ -59,6 +60,7 @@ message: db 'Bailey', 0
 ; Load Kernel
 ;read from disk, CHS addressing, CH DH CL, Cylinder Head Sector
 load_kernel:
+    ;segment*16+offset since bx is 16bit/can't hold 0x10000
     mov bx, KERNEL_LOAD_SEG
     mov es, bx
     mov bx, KERNEL_LOAD_OFFSET
@@ -70,10 +72,12 @@ load_kernel:
     mov cl, 0x02 ;2nd sector since first is bootload
     mov ch, 0x00 ;cylinder 0
     mov ah, 0x02 ;read, 3 is write
-    mov al, 8 ;num of sectors to read, size of kernel
+    mov al, 16 ;num of sectors to read, num*512=size of kernel, 8|16
     int 0x13
 
     jc disk_read_error
+
+    ret
 
 ; Load Protected Mode
 load_PM:
@@ -124,7 +128,7 @@ PMmain:
     mov fs, ax
     mov ss, ax
     mov gs, ax
-    mov ebp, 0x9C00 ;far enough to not overflow previous stack
+    mov ebp, 0x9C00 ;far enough to not overflow previous stack/bootloader, 8192 above ORG
     mov esp, ebp
 
     ;access beyond 1MB
@@ -138,10 +142,10 @@ PMmain:
     mov dword [0xb8000], 0x07690748
     call move_cursor_to_origin
 
-    ; Copy kernel from 0x10000 to 0x100000
-    mov esi, 0x10000  ; Source
-    mov edi, 0x100000 ; Destination
-    mov ecx, 4096     ; 8 sectors * 512 bytes = 4096 bytes
+    ; Copy kernel from 0x10000 to 0x100000, protected mode can access past 1MB now
+    mov esi, KERNEL_LOAD  ; Source
+    mov edi, KERNEL_START_ADDR ; Destination
+    mov ecx, 8192     ; 8 sectors * 512 bytes = 4096 bytes|8192
     cld
     rep movsb
 
