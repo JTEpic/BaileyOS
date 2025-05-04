@@ -1,9 +1,10 @@
 goals:
+background img color
 keyboard move cursor
 64bit long mode,new compiler,qemu
 higher bit color mode
 
-flat binary to only elf,cant use static/global variables?
+flat binary to only elf
 readd ORG 0 to boot
 
 (1)
