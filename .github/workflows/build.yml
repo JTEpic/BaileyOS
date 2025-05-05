@@ -1,0 +1,105 @@
+name: Build OS
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'  # Run at 00:00 UTC on the 1st of every month
+  push:
+    branches:
+      - main  # Optional: Also run on push to main for testing
+  #pull_request:
+    #branches:
+      #- main  # Optional: Run on PRs to main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # Checkout repository and submodules
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive  # Initialize and fetch submodules
+
+      # Cache GCC/Binutils build
+      - name: Cache toolchain
+        id: cache-toolchain
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/opt/cross
+          key: cross-compiler-${{ runner.os }}-i686-elf-${{ hashFiles('lib/gcc/**', 'lib/binutils/**') }}
+          restore-keys: |
+            cross-compiler-${{ runner.os }}-i686-elf-
+
+      # Install dependencies if not cached, need to cache later
+      - name: Install toolchain dependencies
+        #if:steps.cache-toolchain.outputs.cache-hit!='true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo nasm xxd qemu-system-x86
+
+      # Build GCC/Binutils if not cached
+      - name: Build GCC and Binutils
+        if: steps.cache-toolchain.outputs.cache-hit != 'true'
+        run: |
+          export PREFIX="$HOME/opt/cross"
+          export TARGET=i686-elf
+          export PATH="$PREFIX/bin:$PATH"
+
+          # Create build directories
+          mkdir -p $PREFIX
+          
+          # Build binutils
+          cd lib/binutils
+          ../configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror
+          make -j$(nproc)
+          make install
+          cd ../../..
+
+          # Build gcc
+          cd lib/gcc
+          mkdir build-gcc
+          cd build-gcc
+          ../configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers
+          make all-gcc -j$(nproc)
+          make all-target-libgcc -j$(nproc)
+          make install-gcc
+          make install-target-libgcc
+          cd ../../..
+
+          # Clean up build directories
+          #rm -rf ~/cross-build
+
+      # Set up toolchain environment
+      - name: Set up environment
+        run: |
+          echo "$HOME/opt/cross/bin" >> $GITHUB_PATH
+
+      # Build the project
+      - name: Build OS
+        run: |
+          make all
+          ls build/
+
+      # Upload os.bin
+      - name: Upload OS binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: os-bin
+          path: |
+            build/os.bin
+
+      # Upload os.txt
+      - name: Upload OS text dump
+        uses: actions/upload-artifact@v4
+        with:
+          name: os-txt
+          path: build/os.txt
+
+      # Optional: Run QEMU (for testing) NEEDS DELAY/TIMEOUT
+      - name: Run QEMU
+        timeout-minutes: .4
+        run: |
+          make qemu || true
