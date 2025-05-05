@@ -24,8 +24,10 @@ start:
     mov sp, 0x7c00 ;stack pointer, setup stack, grows downwards, 31744
     sti ;enable interupts
 
+    ; video mode, al 03h is a text mode, al 13h is a graphics mode
     mov AH, 00h
     mov AL, 03h
+    ;mov AL, 13h
     int 0x10
 
     mov si, message

@@ -1,8 +1,7 @@
 goals:
-background img color
 keyboard move cursor
-64bit long mode,new compiler,qemu
 higher bit color mode
+64bit long mode,new compiler/binutils/qemu
 
 flat binary to only elf
 readd ORG 0 to boot
