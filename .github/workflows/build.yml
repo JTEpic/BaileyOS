@@ -51,26 +51,30 @@ jobs:
           # Create build directories
           mkdir -p $PREFIX
           
+          cd lib
+
           # Build binutils
-          cd lib/binutils-gdb
-          ../configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror
+          mkdir build-binutils
+          cd build-binutils
+          ../binutils-gdb/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror
           make -j$(nproc)
           make install
-          cd ../../..
+          cd ..
 
           # Build gcc
-          cd lib/gcc
           mkdir build-gcc
           cd build-gcc
-          ../configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers
+          ../gcc/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers
           make all-gcc -j$(nproc)
           make all-target-libgcc -j$(nproc)
           make install-gcc
           make install-target-libgcc
-          cd ../../..
+          cd ..
 
           # Clean up build directories
           #rm -rf ~/cross-build
+
+          cd ..
 
       # Set up toolchain environment
       - name: Set up environment
