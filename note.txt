@@ -32,6 +32,7 @@ https://notisrac.github.io/FileToCArray/
 
 
 Cross Compiler:
+https://wiki.osdev.org/GCC_Cross-Compiler
     Put extracted tar.gz into $HOME/src:
     https://ftp.gnu.org/gnu/binutils/
     https://ftp.gnu.org/gnu/gcc/

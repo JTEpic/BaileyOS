@@ -1,9 +1,11 @@
 BOOT = boot
 KERNEL = kernel
+USER = user
 BUILD = build
 QEMU_TARGET = os.bin
 
-FILES = $(BUILD)/kernel.asm.bin $(BUILD)/kernel.o
+FILES = $(BUILD)/kernel.asm.bin $(BUILD)/kernel.o $(BUILD)/images.o
+INCLUDES = -I$(KERNEL) -I$(USER)
 FLAGS = -g -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -Wall -O0 -Iinc
 
 all:
@@ -20,7 +22,8 @@ all:
 
 	nasm -f bin $(BOOT)/boot3.asm -o $(BUILD)/boot3.bin
 	nasm -f elf -g $(KERNEL)/kernel.asm -o $(BUILD)/kernel.asm.bin
-	i686-elf-gcc -I$(KERNEL) $(FLAGS) -std=gnu99 -c $(KERNEL)/kernel.c -o $(BUILD)/kernel.o
+	i686-elf-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c $(KERNEL)/kernel.c -o $(BUILD)/kernel.o
+	i686-elf-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c $(USER)/images.c -o $(BUILD)/images.o
 
 	# Combine asm/c kernels
 	i686-elf-ld -g -relocatable $(FILES) -o $(BUILD)/completeKernel.o
