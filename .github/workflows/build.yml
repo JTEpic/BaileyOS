@@ -92,18 +92,17 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: os-bin
-          path: |
-            build/os.bin
+          path: build/os.bin
 
       # Upload os.txt
-      - name: Upload OS text dump
+      - name: Upload OS text
         uses: actions/upload-artifact@v4
         with:
           name: os-txt
           path: build/os.txt
 
-      # Optional: Run QEMU (for testing) NEEDS DELAY/TIMEOUT
+      # Optional: Run QEMU (for testing)
       - name: Run QEMU
         timeout-minutes: .4
         run: |
-          make qemu || true
+          make qemu-nographic || true

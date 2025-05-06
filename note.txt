@@ -5,6 +5,7 @@ higher bit color mode
 
 flat binary to only elf
 readd ORG 0 to boot
+init serial better
 
 (1)
 bash make.sh

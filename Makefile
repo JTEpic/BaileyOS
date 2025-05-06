@@ -44,5 +44,9 @@ qemu:
 	# i386 or x86_64
 	qemu-system-x86_64 -hda $(BUILD)/$(QEMU_TARGET)
 
+qemu-nographic:
+	# i386 or x86_64, -display none or -nographic -serial mon:stdio
+	qemu-system-x86_64 -hda $(BUILD)/$(QEMU_TARGET) -display none
+
 clean:
 	rm $(BUILD)/*
