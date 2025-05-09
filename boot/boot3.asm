@@ -69,6 +69,11 @@ load_kernel:
     ;push KERNEL_LOAD_SEG
     ;pop es
 
+    call disk_load
+
+    ret
+
+disk_load:
     mov dh, 0x00 ;head 0
     mov dl, 0x80 ;read from first drive
     mov cl, 0x02 ;2nd sector since first is bootload
@@ -81,6 +86,11 @@ load_kernel:
 
     ret
 
+disk_read_error:
+    cli
+    hlt
+    jmp $
+
 ; Load Protected Mode
 load_PM:
     cli
@@ -91,8 +101,7 @@ load_PM:
 
     jmp CODE_OFFSET:PMmain
 
-disk_read_error:
-    hlt
+    jmp $
 
 gdt_start:
     dd 0x0
@@ -152,6 +161,8 @@ PMmain:
     rep movsb
 
     jmp CODE_OFFSET:KERNEL_START_ADDR
+
+    jmp $
 
 move_cursor_to_origin:
     ; Calculate cursor offset (0 for row=0, col=0)

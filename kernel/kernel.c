@@ -1,18 +1,20 @@
 #include "kernel.h"
+#include "idt.h"
+#include "pic.h"
 #include "images.h"
+#include "serials.h"
+#include "keyboard.h"
 #include <stdbool.h>
 
-void serial_message(char* msg);
 void delay(int count);
-void setBackground(char* video,Images* img,unsigned int delays);
-void colorSwitcher(char* video);
+void setBackground(unsigned char* video,Images* img,unsigned int delays);
+void colorSwitcher(unsigned char* video);
 unsigned char getGrayImgChar(unsigned char val);
 unsigned char get8bitTo4bitImgChar(unsigned char val);
 
 #define VIDEO_MEMORY 0xb8000
 #define SCREEN_WIDTH 80
 #define SCREEN_HEIGHT 25
-#define SERIAL_PORT 0x3F8
 
 #define BLACK_BG 0x0F    // Black background (---- ----: bg=black, fg=white)
 #define WHITE_BG 0xF0    // White background (---- 0000: bg=white, fg=black)
@@ -46,23 +48,31 @@ void kernel_main(){
     *video = 'T';
     delay(200000);
 
-    const char *msg = "Kernel running\n";
+    unsigned char msg[] = "Kernel running\n";
     serial_message(msg);
-    const char *msg2 = "Glorious\n";
+    unsigned char msg2[] = "Glorious\n";
     serial_message(msg2);
-
-    //printf("skibidi");
+    serial_message("Skibidi\n");
     
     Images img1;
     initializeImg(&img1);
-
-    setBackground(video,&img1,1000);
+    
+    setBackground(video,&img1,500);
+    
+    // Initialize PIC and IDT
+    init_pic();
+    init_idt();
+    asm volatile("sti"); // Enable interrupts
 
     bool loop = true;
     int updater=0;
     //inf loop
     while(loop){
-        // Loop through each cell (80 columns x 25 rows)
+        unsigned char scan = get_last_scancode();
+        if(scan!=0){
+            serial_write(scancode_to_char(scan));
+            serial_write('\n');
+        }
         if(updater%(int)200E6==0){
             updater=0;
             //colorSwitcher(video);
@@ -74,7 +84,8 @@ void kernel_main(){
 
 //switch background
 bool green=true;
-void colorSwitcher(char* video){
+void colorSwitcher(unsigned char* video){
+    // Loop through each cell (SCREEN_WIDTH columns x SCREEN_HEIGHT rows)
     for (int row = 0; row < SCREEN_HEIGHT; row++){
         for (int col = 0; col < SCREEN_WIDTH; col++){
             // Calculate index: each cell is 2 bytes (char + attribute)
@@ -100,13 +111,14 @@ void delay(int count) {
     for (int x=0;x<count;x++) {
         for (int y=0;y<1000;y++) {
             // Empty loop to burn CPU cycles
-            asm("nop"); // No-operation instruction
+            asm volatile("nop"); // No-operation instruction
         }
     }
 }
 
 //sets background,mode 0=grayscale,mode 1=8bitTo4bit,else grayscale
-void setBackground(char* video,Images* img,unsigned int delays){
+void setBackground(unsigned char* video,Images* img,unsigned int delays){
+    // Loop through each cell (SCREEN_WIDTH columns x SCREEN_HEIGHT rows)
     int pix=0;
     for (int row = 0; row < SCREEN_HEIGHT; row++){
         for (int col = 0; col < SCREEN_WIDTH; col++){
@@ -199,21 +211,5 @@ unsigned char get8bitTo4bitImgChar(unsigned char val){
         } else {
             return GRAY_BG; // Light Gray
         }
-    }
-}
-
-static inline void outb(unsigned short port, unsigned char val) {
-    asm volatile("outb %0, %1" : : "a"(val), "Nd"(port));
-}
-
-void serial_write(char c) {
-    if(c=='\n')
-        outb(SERIAL_PORT, '\r');
-    outb(SERIAL_PORT, c);
-}
-
-void serial_message(char* msg){
-    for (int i = 0; msg[i]; i++) {
-        serial_write(msg[i]);
     }
 }

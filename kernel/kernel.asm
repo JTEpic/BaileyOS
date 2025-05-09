@@ -2,6 +2,8 @@
 
 global _start
 extern kernel_main
+extern handle_default_interrupt
+extern handle_keyboard_interrupt
 
 VIDEO_MEMORY equ 0xb8000
 WHITE_ON_BLACK equ 0x0f ; the color byte for each character
@@ -16,7 +18,10 @@ _start:
     call print_string_pm
     
     call kernel_main
-    
+
+    cli
+    hlt ;hlt cpu indefinitely since no interrupts
+
     jmp $
 
 print_string_pm:
@@ -39,6 +44,26 @@ print_string_pm_loop:
 print_string_pm_done:
     popa
     ret
+
+; Default handler, 32bit
+global default_handler
+default_handler:
+    ;mov dword [0xb8000], 0x07690748
+    pushad
+    call handle_default_interrupt
+    popad
+    iret
+
+; Keyboard interrupt handler, irq1
+global keyboard_handler
+keyboard_handler:
+    ;cli
+    ;mov dword [0xb8000], 0x07690748
+    pushad
+    call handle_keyboard_interrupt
+    popad
+    ;sti
+    iret
 
 MSG_PROT_MODE db "Printing in Kernel", 0
 

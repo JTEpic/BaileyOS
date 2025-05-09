@@ -35,7 +35,7 @@ jobs:
 
       # Install dependencies if not cached, need to cache later
       - name: Install toolchain dependencies
-        #if:steps.cache-toolchain.outputs.cache-hit!='true'
+        #if: steps.cache-toolchain.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo nasm xxd qemu-system-x86
@@ -103,6 +103,6 @@ jobs:
 
       # Optional: Run QEMU (for testing)
       - name: Run QEMU
-        timeout-minutes: .4
         run: |
-          make qemu-nographic || true
+          timeout 15 make qemu-nographic || true
+          make clean

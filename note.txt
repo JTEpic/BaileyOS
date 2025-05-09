@@ -1,11 +1,13 @@
 goals:
 keyboard move cursor
+system clock
+system error interrupts (eg divide by 0)
 higher bit color mode
-64bit long mode,new compiler/binutils/qemu
+64bit long mode,new compiler/binutils/qemu,currently splits 64bit variables into 32bit components
 
+clicking keyboard during setBackground disables keyboard? cli, moving inits
 flat binary to only elf
 readd ORG 0 to boot
-init serial better
 
 (1)
 bash make.sh
