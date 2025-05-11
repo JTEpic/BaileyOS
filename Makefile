@@ -7,7 +7,7 @@ BUILD = build
 QEMU_TARGET = os.bin
 
 # $(BUILD)/.o
-FILES = $(BUILD)/kernel.asm.bin $(BUILD)/kernel.o $(BUILD)/idt.o $(BUILD)/pic.o $(BUILD)/keyboard.o $(BUILD)/images.o $(BUILD)/serials.o
+FILES = $(BUILD)/kernel.asm.bin $(BUILD)/kernel.o $(BUILD)/idt.o $(BUILD)/pic.o $(BUILD)/keyboard.o $(BUILD)/images.o $(BUILD)/serials.o $(BUILD)/strings.o
 INCLUDES = -I$(KERNEL) -I$(CPU) -I$(DRIVERS) -I$(USER)
 FLAGS = -g -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -Wall -O0 -Iinc
 
@@ -33,6 +33,7 @@ all:
 	i686-elf-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c $(DRIVERS)/keyboard.c -o $(BUILD)/keyboard.o
 	i686-elf-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c $(USER)/images.c -o $(BUILD)/images.o
 	i686-elf-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c $(USER)/serials.c -o $(BUILD)/serials.o
+	i686-elf-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c $(USER)/strings.c -o $(BUILD)/strings.o
 
 	# Combine asm/c kernels
 	i686-elf-ld -g -relocatable $(FILES) -o $(BUILD)/completeKernel.o

@@ -1,7 +1,7 @@
 #include "pic.h"
 #include "serials.h"
+#include "keyboard.h"
 
-// Remap PIC
 void init_pic(){
     // ICW1: Start Initialize PICs
     outb(PIC1_COMMAND, 0x11);
@@ -21,7 +21,7 @@ void init_pic(){
 
     // Unmask IRQ1 (keyboard)
     //outb(PIC1_DATA, 0xFD); // Enable IRQ1 (keyboard) only
-    //outb(PIC2_DATA, 0xFD); // Enable IRQ1 only
+    //outb(PIC2_DATA, 0xFF); // Disable PIC2 as unneeded
     // Unmask all
     outb(PIC1_DATA, 0x00);
     outb(PIC2_DATA, 0x00);
@@ -32,4 +32,18 @@ void init_pic(){
     //unsigned char mask = inb(PIC1_DATA);
     //mask &= ~(1 << IRQ1); // Clear bit for IRQ1
     //outb(PIC1_DATA, mask);
+}
+
+void clearPIC(){
+    //clear keyboard (if bottleneck) on PIC1, (interrupt then calls in order of keys), last_scancode reset at end
+    clear_keyboard_interrupt();
+    
+    //inb(KEYBOARD_DATA);       // "recieves" first event
+    //outb(PIC1_COMMAND, 0x20); // sends EOI
+    //cascade in order of events
+    //reset any variables
+    
+    //both needed if on PIC2
+    //outb(PIC1_COMMAND, 0x20); // EOI to PIC1, IRQ0-7
+    //outb(PIC2_COMMAND, 0x20); // EOI to PIC2, IRQ8-15
 }

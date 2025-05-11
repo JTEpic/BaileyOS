@@ -44,9 +44,9 @@ void kernel_main(){
     unsigned char *video = (unsigned char *)VIDEO_MEMORY;
     
     *(char*)VIDEO_MEMORY='B';
-    delay(200000);
+    delay(100000);
     *video = 'T';
-    delay(200000);
+    delay(100000);
 
     unsigned char msg[] = "Kernel running\n";
     serial_message(msg);
@@ -57,20 +57,22 @@ void kernel_main(){
     Images img1;
     initializeImg(&img1);
     
-    setBackground(video,&img1,500);
+    setBackground(video,&img1,200);
     
     // Initialize PIC and IDT
     init_pic();
     init_idt();
     asm volatile("sti"); // Enable interrupts
+    clearPIC();
 
     bool loop = true;
     int updater=0;
     //inf loop
     while(loop){
-        unsigned char scan = get_last_scancode();
+        const unsigned char scan = get_last_scancode();
         if(scan!=0){
-            serial_write(scancode_to_char(scan));
+            const char* key = scancode_to_char(scan);
+            serial_message(key);
             serial_write('\n');
         }
         if(updater%(int)200E6==0){

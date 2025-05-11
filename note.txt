@@ -1,11 +1,13 @@
 goals:
-keyboard move cursor
 system clock
+keyboard move cursor
+0xE0 on keyboard
 system error interrupts (eg divide by 0)
 higher bit color mode
 64bit long mode,new compiler/binutils/qemu,currently splits 64bit variables into 32bit components
 
-clicking keyboard during setBackground disables keyboard? cli, moving inits
+handle_default_interrupt only EOI PIC2 if part of it
+better drive number in boot loader
 flat binary to only elf
 readd ORG 0 to boot
 
@@ -22,12 +24,15 @@ make clean
 
 xxd for binary data
 
-http://www.ctyme.com/intr/int.htm
-https://intermezzos.github.io/book/second-edition/vga/understanding-text-mode.html
 https://wiki.osdev.org/FAT
 Dragon Zap Education
 https://github.com/screeck/YouTube/tree/main/How_to_write_a_bootloader
 https://github.com/cfenollosa/os-tutorial
+
+Tables/Interrupts
+http://www.ctyme.com/intr/int.htm
+https://intermezzos.github.io/book/second-edition/vga/understanding-text-mode.html
+https://wiki.osdev.org/PS/2_Keyboard
 
 Global Descriptor Table (GDT)
 https://wiki.osdev.org/Global_Descriptor_Table

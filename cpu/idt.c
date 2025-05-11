@@ -7,7 +7,6 @@
 struct idt_entry idt[IDT_SIZE];
 struct idt_ptr idtp;
 
-// Set IDT entry
 void set_idt_entry(int index, unsigned int handler, unsigned short sel, unsigned char flags) {
     idt[index].base_low = handler & 0xFFFF;
     idt[index].base_high = (handler >> 16) & 0xFFFF;
@@ -16,13 +15,11 @@ void set_idt_entry(int index, unsigned int handler, unsigned short sel, unsigned
     idt[index].flags = flags;
 }
 
-// Default handler for unhandled interrupts
 void handle_default_interrupt(void) {
     outb(PIC1_COMMAND, 0x20); // Send EOI to master PIC
-    //outb(PIC2_COMMAND, 0x20); // Send EOI to slave PIC
+    outb(PIC2_COMMAND, 0x20); // Send EOI to slave PIC if PIC2,IRQ8-15
 }
 
-// Initialize IDT
 void init_idt() {
     //idtp.limit = sizeof(idt) - 1;
     idtp.limit = (sizeof(struct idt_entry) * IDT_SIZE) - 1;

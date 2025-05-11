@@ -9,6 +9,9 @@
 #define PIC2_COMMAND 0xA0
 #define PIC2_DATA 0xA1
 
+// Initalize and Remap PIC
 void init_pic();
+// Clear PIC and devices
+void clearPIC();
 
 #endif

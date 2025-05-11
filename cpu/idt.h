@@ -2,10 +2,11 @@
 #ifndef IDT_H
 #define IDT_H
 
-// Default handler for undefined if PIC enabled
+// Default handler for undefined interrupts (kernel assembly)
 extern void default_handler(void);
+// Default handler for unhandled interrupts (C part)
 void handle_default_interrupt(void);
-// IRQ1 (33) for Keyboard and External interrupt handler (defined in kernel.asm & drivers)
+// IRQ1 (33) for Keyboard and External interrupt handler (kernel assembly)
 #define IRQ1 0x21
 extern void keyboard_handler(void);
 
@@ -25,8 +26,9 @@ struct idt_ptr {
     unsigned int base;
 } __attribute__((packed));
 
+// Set IDT entry
 void set_idt_entry(int index, unsigned int handler, unsigned short sel, unsigned char flags);
-//32bit
+// Initialize IDT, 32bit
 void init_idt();
 
 #endif

@@ -16,8 +16,8 @@ void serial_write(unsigned char c) {
     outb(SERIAL_PORT, c);
 }
 
-void serial_message(unsigned char msg[]){
-    for (int i = 0; msg[i]; i++) {
+void serial_message(const unsigned char* msg){
+    for (int i = 0; msg[i]!='\0'; i++) {
         serial_write(msg[i]);
     }
 }

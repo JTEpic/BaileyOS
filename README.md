@@ -8,9 +8,9 @@ OS project started september 2024
 
 ## Introduction
 
-BaileyOS is an Open Source, multi-platform operating system. It provides a simple, platform-independent API for creating windows, contexts and surfaces, reading input, handling events, etc.
+BaileyOS is an Open Source, multi-platform operating system. It provides a simple, platform-independent OS for creating windows, contexts and surfaces, reading input, handling events, etc.
 
-BaileyOS natively supports Linux, macOS and Windows and other Unix-like systems. On Linux (both Wayland and X11 are supported.) currently X11 is supported.
+BaileyOS natively supports Linux, macOS and Windows and other Unix-like systems. On Linux both Wayland and X11 are supported through Qemu.
 
 BaileyOS is licensed under the (ENTER LICENSE) license.
 
@@ -25,7 +25,7 @@ The master branch is the stable integration branch and should always compile and
 
 ## Compiling BaileyOS
 
-BaileyOS is written primarily in Assembly/C++. BaileyOS itself requires only the headers and libraries for your OS and window system.
+BaileyOS is written primarily in Assembly/C. BaileyOS itself requires only the cross-compiled GCC and binutils compiling tool.
 
 BaileyOS supports compilation on Windows with Visual C++ 2013 and later, MinGW and MinGW-w64, on macOS with Clang and on Linux and other Unix-like systems with GCC and Clang. It will likely compile in other environments as well, but this is not regularly tested.
 
@@ -44,7 +44,7 @@ See the contribution guide for more information.
 
 ## System requirements
 
-BaileyOS supports Windows XP and later and macOS 10.8 and later. Linux and other Unix-like systems running the X Window System are supported even without a desktop environment or modern extensions, although some features require a running window or clipboard manager.
+BaileyOS supports nearly any modern system though it is recommended to run through Qemu.
 
 See the compatibility guide in the documentation for more information.
 
@@ -56,6 +56,7 @@ BaileyOS itself needs the folowing headers and libraries for your OS and window 
     nasm for compiling assembly
     i686-elf (Binutils + GCC) for cross compiling C
     qemu-desktop for emulation
+    xxd for binary disassembly
 
 
 ## Reporting bugs

@@ -10,8 +10,10 @@ unsigned char inb(unsigned short port);
 // send out char
 void outb(unsigned short port, unsigned char val);
 
+// singular char write
 void serial_write(unsigned char c);
 
-void serial_message(unsigned char msg[]);
+// message until \0
+void serial_message(const unsigned char* msg);
 
 #endif

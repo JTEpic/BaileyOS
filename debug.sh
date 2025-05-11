@@ -6,4 +6,5 @@ gdb -ex "add-symbol-file build/kernel.elf 0x100000" -ex "break kernel_main" -ex 
 #add-symbol-file build/completeKernel.o 0x100000
 #y
 #break kernel_main
+#break file.c:num
 #target remote | qemu-system-x86_64 -hda build/os.bin -gdb stdio -S
