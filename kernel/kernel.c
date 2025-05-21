@@ -4,6 +4,8 @@
 #include "images.h"
 #include "serials.h"
 #include "keyboard.h"
+#include "console.h"
+#include "strings.h"
 #include <stdbool.h>
 
 void delay(int count);
@@ -36,7 +38,7 @@ unsigned char get8bitTo4bitImgChar(unsigned char val);
 #define GREEN_FG 0x0A   // Green foreground (0000 1010: fg=green, bg=black)
 #define BLUE_FG 0x09   // Blue foreground (0000 ----: fg=blue, bg=black)
 
-#define SPACE_CHAR 0x20 // ASCII space character
+//#define SPACE_CHAR 0x20 // ASCII space character
 
 // Max 16 sectors * 512 byte = 8192 bytes
 void kernel_main(){
@@ -44,9 +46,9 @@ void kernel_main(){
     unsigned char *video = (unsigned char *)VIDEO_MEMORY;
     
     *(char*)VIDEO_MEMORY='B';
-    delay(100000);
-    *video = 'T';
-    delay(100000);
+    delay(200000);
+    video[2] = 'T';
+    delay(200000);
 
     unsigned char msg[] = "Kernel running\n";
     serial_message(msg);
@@ -55,7 +57,7 @@ void kernel_main(){
     serial_message("Skibidi\n");
     
     Images img1;
-    initializeImg(&img1);
+    initializeImg(&img1, 1);
     
     setBackground(video,&img1,200);
     
@@ -63,19 +65,27 @@ void kernel_main(){
     init_pic();
     init_idt();
     asm volatile("sti"); // Enable interrupts
-    clearPIC();
+    clearPIC(); // In case of input prior to initalization
+
+    Console console1;
+    initializeConsole(&console1, video, SCREEN_HEIGHT, SCREEN_WIDTH);
 
     bool loop = true;
     int updater=0;
     //inf loop
     while(loop){
+        // Inputs
         const unsigned char scan = get_last_scancode();
         if(scan!=0){
             const char* key = scancode_to_char(scan);
             serial_message(key);
             serial_write('\n');
+
+            updateConsole(&console1, key);
         }
-        if(updater%(int)200E6==0){
+
+        // Updater after certain time span
+        if(updater%(int)200E6 == 0){
             updater=0;
             //colorSwitcher(video);
         }
@@ -84,8 +94,8 @@ void kernel_main(){
     return;
 }
 
-//switch background
-bool green=true;
+//switch background between certain colors
+bool primary=true;
 void colorSwitcher(unsigned char* video){
     // Loop through each cell (SCREEN_WIDTH columns x SCREEN_HEIGHT rows)
     for (int row = 0; row < SCREEN_HEIGHT; row++){
@@ -93,19 +103,20 @@ void colorSwitcher(unsigned char* video){
             // Calculate index: each cell is 2 bytes (char + attribute)
             int index = (row * SCREEN_WIDTH + col) * 2;
 
-            // Set character (e.g., space) and color background
-            if(green){
-                video[index] = SPACE_CHAR;   // Character
+            // Set character (e.g., space) if wanted
+            //video[index] = SPACE_CHAR;   // Character
+
+            // Set color background
+            if(primary){
                 video[index + 1] = GREEN_BG; // Green background
                 // Alternatively, use GREEN_FG for green text:
                 //video[index + 1] = GREEN_FG;
             }else{
-                video[index] = SPACE_CHAR;   // Character
                 video[index + 1] = BLUE_BG;
             }
         }
     }
-    green=!green;
+    primary=!primary;
 }
 
 // Simple blocking delay function
@@ -127,9 +138,10 @@ void setBackground(unsigned char* video,Images* img,unsigned int delays){
             // Calculate index: each cell is 2 bytes (char + attribute)
             int index = (row * SCREEN_WIDTH + col) * 2;
 
-            // Set character (e.g., space) and color background
-            video[index] = SPACE_CHAR;   // Character
+            // Set character (e.g., space) if wanted
+            //video[index] = SPACE_CHAR;   // Character
             
+            // Set color background
             if(pix<img->ARRAY_SIZE)
                 if(img->ARRAY_MODE==0)
                     video[index + 1] = getGrayImgChar(img->arr[pix]);

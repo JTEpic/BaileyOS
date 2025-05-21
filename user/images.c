@@ -58,15 +58,18 @@ static const unsigned char dormGray[2000]  = {
     144, 194, 202, 201, 202, 202, 202, 202, 200, 199, 195, 151, 63, 68, 68, 70, 72, 73, 75, 78, 80, 80, 81, 81, 81, 81, 81, 85, 86, 89, 89, 91, 92, 92, 96, 97, 97, 99, 100, 103, 100, 100, 96, 103, 104, 107, 107, 108, 110, 109, 109, 110, 110, 113, 114, 116, 118, 117, 119, 120, 122, 124, 126, 127, 125, 127, 125, 128, 128, 131, 130, 131, 127, 125, 131, 130, 132, 135, 134, 132
 };
 
-// Function to initialize the array elements to zero
-void initializeImg(Images* instance) {
+// Function to initialize the array
+void initializeImg(Images* instance, int x) {
     //if (instance == NULL) return;
-    /*for (int i = 0; i < ARRAY_SIZE; i++) {
-        instance->arr[i] = dormGray[i];
-    }*/
-    instance->arr=dormGray;
-    instance->ARRAY_SIZE=2000;
-    instance->ARRAY_MODE=0;
+    if(x==1){
+        instance->arr=dormGray;
+        instance->ARRAY_SIZE=2000;
+        instance->ARRAY_MODE=0;
+    } else if(x==2){
+        //instance->arr=;
+        //instance->ARRAY_SIZE=;
+        //instance->ARRAY_MODE=;
+    }
 }
 
 // Return a pointer to the array inside the struct

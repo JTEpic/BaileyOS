@@ -66,7 +66,7 @@ char* scancode_to_char(unsigned char scancode) {
         case 0x0D:
             return "+";
         case 0x0E:
-            return "Backspace";
+            return "Backspc";
         case 0x0F:
             return "Tab";
         case 0x10:

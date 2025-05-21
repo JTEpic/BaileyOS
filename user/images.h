@@ -11,8 +11,8 @@ typedef struct {
     unsigned char ARRAY_MODE;
 } Images;
 
-// Function to initialize the array
-void initializeImg(Images* instance);
+// Function to initialize the array using image x
+void initializeImg(Images* instance, int x);
 
 // Function to get a pointer to the array (if needed)
 unsigned char* getImg(Images* instance);

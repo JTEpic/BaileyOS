@@ -8,5 +8,8 @@ int strlen(const char* arr);
 // add src to end of dest, can't ensure enough space
 void strcat(char* dest,const char* src);
 
+// compare chars for equality
+int strcmp(const char* arr1, const char* arr2);
+
 #endif
 
