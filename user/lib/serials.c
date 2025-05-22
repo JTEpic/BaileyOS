@@ -10,6 +10,10 @@ void outb(unsigned short port, unsigned char val) {
     asm volatile("outb %0, %1" : : "a"(val), "Nd"(port));
 }
 
+void outw(unsigned short port, unsigned short val) {
+    asm volatile ("outw %0, %1" : : "a"(val), "Nd"(port));
+}
+
 void serial_write(unsigned char c) {
     if(c=='\n')
         outb(SERIAL_PORT, '\r');
@@ -20,4 +24,11 @@ void serial_message(const unsigned char* msg){
     for (int i = 0; msg[i]!='\0'; i++) {
         serial_write(msg[i]);
     }
+}
+
+void updateCursor(unsigned int pos){
+	outb(0x3D4, 0x0F);
+	outb(0x3D5, (unsigned int) (pos & 0xFF));
+	outb(0x3D4, 0x0E);
+	outb(0x3D5, (unsigned int) ((pos >> 8) & 0xFF));
 }

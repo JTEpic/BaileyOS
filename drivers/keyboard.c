@@ -1,21 +1,28 @@
 #include "keyboard.h"
-#include "serials.h"
+#include "lib/serials.h"
 #include "pic.h"
-#include "strings.h"
+#include "lib/strings.h"
+#include "stdbool.h"
 
-// Global variable to store last scancode
+// Global variables
 static volatile unsigned char last_scancode;
-//bool last_E0=false;
+bool last_E0;
 
+// Active twice if an E0 key, first 0xE0 then the key
 void handle_keyboard_interrupt() {
-    last_scancode = inb(KEYBOARD_DATA);
+    unsigned char current_scancode = inb(KEYBOARD_DATA);
+    //last_scancode = inb(KEYBOARD_DATA);
     outb(PIC1_COMMAND, 0x20); // Send master PIC, controlling keyboard, EOI (end of interrupt)
 
-    //if(last_scancode==0xE0&&){
-    //    serial_message("E0 clicked\n");
-    //    last_E0=true;
-    //}else
-    //    last_E0=false;
+    if(current_scancode==0xE0){
+        //serial_message("E0 clicked\n");
+        last_E0=true;
+    // Scancode not E0 (post E0 character or not an E0 character)
+    } else if(last_scancode!=0xE0){
+        last_E0 = false;
+    }
+
+    last_scancode = current_scancode;
 }
 
 void clear_keyboard_interrupt(){
@@ -94,9 +101,15 @@ char* scancode_to_char(unsigned char scancode) {
 		case 0x1B:
 		    return "]";
 		case 0x1C:
-			return "Enter"; //KeyEnter 0xE0
+            if(last_E0)
+                return "KeyEnter";
+            else
+			    return "Enter"; //KeyEnter 0xE0
 		case 0x1D:
-			return "LCtrl"; //RCtrl 0xE0
+			if(last_E0)
+                return "RCtrl";
+            else
+                return "LCtrl"; //RCtrl 0xE0
 		case 0x1E:
 			return "A";
 		case 0x1F:
@@ -144,13 +157,19 @@ char* scancode_to_char(unsigned char scancode) {
         case 0x34:
             return ".";
         case 0x35:
-            return "/"; //Key/ 0xE0
+            if(last_E0)
+                return "Key/";
+            else
+                return "/"; //Key/ 0xE0
         case 0x36:
             return "RShift";
         case 0x37:
-            return "Keypad *";
+            return "Key*";
         case 0x38:
-            return "LAlt"; //RAlt 0xE0
+            if(last_E0)
+                return "RAlt";
+            else
+                return "LAlt"; //RAlt 0xE0
         case 0x39:
             return "Spc";
         case 0x3A:
@@ -179,27 +198,44 @@ char* scancode_to_char(unsigned char scancode) {
             return "NumberLock";
         case 0x46:
             return "ScrollLock";
-
         case 0x47:
-            return "Key7"; //Home 0xE0
+            if(last_E0)
+                return "Home";
+            else
+                return "Key7"; //Home 0xE0
         case 0x48:
-            return "Key8"; //CUp 0xE0
+            if(last_E0)
+                return "CUp";
+            else
+                return "Key8"; //CUp 0xE0
         case 0x49:
             return "Key9"; //PUp 0xE0
         case 0x4A:
             return "Key-";
         case 0x4B:
-            return "Key4"; //CLeft 0xE0
+            if(last_E0)
+                return "CLeft";
+            else
+                return "Key4"; //CLeft 0xE0
         case 0x4C:
             return "Key5";
         case 0x4D:
-            return "Key6"; //CRight 0xE0
+            if(last_E0)
+                return "CRight";
+            else
+                return "Key6"; //CRight 0xE0
         case 0x4E:
             return "Key+";
         case 0x4F:
-            return "Key1"; //End 0xE0
+            if(last_E0)
+                return "End";
+            else
+                return "Key1"; //End 0xE0
         case 0x50:
-            return "Key2"; //CDown 0xE0
+            if(last_E0)
+                return "CDown";
+            else
+                return "Key2"; //CDown 0xE0
         case 0x51:
             return "Key3"; //PDown 0xE0
         case 0x52:

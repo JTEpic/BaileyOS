@@ -1,11 +1,11 @@
 #include "kernel.h"
 #include "idt.h"
 #include "pic.h"
-#include "images.h"
-#include "serials.h"
+#include "lib/images.h"
+#include "lib/serials.h"
 #include "keyboard.h"
-#include "console.h"
-#include "strings.h"
+#include "programs/editor.h"
+#include "lib/strings.h"
 #include <stdbool.h>
 
 void delay(int count);
@@ -67,8 +67,8 @@ void kernel_main(){
     asm volatile("sti"); // Enable interrupts
     clearPIC(); // In case of input prior to initalization
 
-    Console console1;
-    initializeConsole(&console1, video, SCREEN_HEIGHT, SCREEN_WIDTH);
+    Editor editor1;
+    initializeEditor(&editor1, video, SCREEN_HEIGHT, SCREEN_WIDTH);
 
     bool loop = true;
     int updater=0;
@@ -81,7 +81,19 @@ void kernel_main(){
             serial_message(key);
             serial_write('\n');
 
-            updateConsole(&console1, key);
+            // Virtual Machine Shutdown
+            if(strcmp(key, "KeyEnter") == 0){
+                // Qemu
+                outw(0x604, 0x2000);
+                // VirtualBox
+                outw(0x4004, 0x3400);
+                // Hypervisor
+                outw(0x600, 0x34);
+                // Bochs
+                outw(0xB004, 0x2000);
+            }
+
+            updateEditor(&editor1, key);
         }
 
         // Updater after certain time span
@@ -91,6 +103,7 @@ void kernel_main(){
         }
         updater++;
     }
+
     return;
 }
 

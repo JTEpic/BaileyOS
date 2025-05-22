@@ -1,5 +1,5 @@
 #include "pic.h"
-#include "serials.h"
+#include "lib/serials.h"
 #include "keyboard.h"
 
 void init_pic(){

@@ -1,6 +1,6 @@
 #include "idt.h"
 #include "pic.h"
-#include "serials.h"
+#include "lib/serials.h"
 
 // Global IDT
 #define IDT_SIZE 256
