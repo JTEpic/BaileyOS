@@ -74,12 +74,12 @@ load_kernel:
     ret
 
 disk_load:
-    mov dh, 0x00 ;head 0
-    mov dl, 0x80 ;read from first drive
-    mov cl, 0x02 ;2nd sector since first is bootload
-    mov ch, 0x00 ;cylinder 0
-    mov ah, 0x02 ;read, 3 is write
-    mov al, 16 ;num of sectors to read, num*512=size of kernel, 8|16
+    mov dh, 0x00  ;head 0
+    mov dl, 0x80  ;read from first drive
+    mov cl, 0x02  ;2nd sector since first is bootload
+    mov ch, 0x00  ;cylinder 0
+    mov ah, 0x02  ;read, 3 is write
+    mov al, 32    ;num of sectors to read, num*512=size of kernel, 8 sectors|16|32
     int 0x13
 
     jc disk_read_error
@@ -153,10 +153,10 @@ PMmain:
     mov dword [0xb8000], 0x07690748
     call move_cursor_to_origin
 
-    ; Copy kernel from 0x10000 to 0x100000, protected mode can access past 1MB now
-    mov esi, KERNEL_LOAD  ; Source
-    mov edi, KERNEL_START_ADDR ; Destination
-    mov ecx, 8192     ; 8 sectors * 512 bytes = 4096 bytes|8192
+    ; Copy kernel from 0x10000 to 0x100000, protected mode can access past 1MB now, works if kernel over 1MB in size?
+    mov esi, KERNEL_LOAD        ; Source
+    mov edi, KERNEL_START_ADDR  ; Destination
+    mov ecx, 16384              ; sectors * 512 bytes = 4096 bytes|8192|16384
     cld
     rep movsb
 

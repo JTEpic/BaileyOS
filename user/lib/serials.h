@@ -19,7 +19,7 @@ void serial_write(unsigned char c);
 // message until \0
 void serial_message(const unsigned char* msg);
 
-// update cursor position
+// update cursor position using pixel loc
 void updateCursor(unsigned int pos);
 
 #endif

@@ -4,6 +4,7 @@
 #include "lib/images.h"
 #include "lib/serials.h"
 #include "keyboard.h"
+#include "window.h"
 #include "programs/editor.h"
 #include "lib/strings.h"
 #include <stdbool.h>
@@ -22,7 +23,7 @@ unsigned char get8bitTo4bitImgChar(unsigned char val);
 #define WHITE_BG 0xF0    // White background (---- 0000: bg=white, fg=black)
 #define RED_BG 0x40      // Red background (---- 0000: bg=red, fg=black)
 #define GREEN_BG 0x20    // Green background (0010 0000: bg=green, fg=black)
-#define BLUE_BG 0x10     // Blue background (---- 0000: bg=blue, fg=black)
+#define BLUE_BG 0x1F     // Blue background (---- ----: bg=blue, fg=white)
 #define CYAN_BG 0x30     // Cyan background (---- 0000: bg=cyan, fg=black)
 #define MAGENTA_BG 0x50   // Magenta background (---- 0000: bg=magenta, fg=black)
 #define BROWN_BG 0x6F    // Brown background (---- ----: bg=brown, fg=white)
@@ -40,14 +41,15 @@ unsigned char get8bitTo4bitImgChar(unsigned char val);
 
 //#define SPACE_CHAR 0x20 // ASCII space character
 
-// Max 16 sectors * 512 byte = 8192 bytes
+// Max num sectors * 512 byte = 8192 bytes|16384
 void kernel_main(){
     // Pointer to VGA memory
-    unsigned char *video = (unsigned char *)VIDEO_MEMORY;
+    //unsigned char *video = (unsigned char *)VIDEO_MEMORY;
+    Screen VGA = {(unsigned char *)VIDEO_MEMORY, SCREEN_WIDTH, SCREEN_HEIGHT};
     
     *(char*)VIDEO_MEMORY='B';
     delay(200000);
-    video[2] = 'T';
+    VGA.video[2] = 'T';
     delay(200000);
 
     unsigned char msg[] = "Kernel running\n";
@@ -59,7 +61,7 @@ void kernel_main(){
     Images img1;
     initializeImg(&img1, 1);
     
-    setBackground(video,&img1,200);
+    setBackground(VGA.video,&img1,200);
     
     // Initialize PIC and IDT
     init_pic();
@@ -68,7 +70,10 @@ void kernel_main(){
     clearPIC(); // In case of input prior to initalization
 
     Editor editor1;
-    initializeEditor(&editor1, video, SCREEN_HEIGHT, SCREEN_WIDTH);
+    initializeEditor(&editor1, &VGA, 3, 10, SCREEN_HEIGHT/4, SCREEN_WIDTH/4);
+    //Editor editor2;
+    //initializeEditor(&editor2, &VGA, 6, 10, video, SCREEN_HEIGHT/4, SCREEN_WIDTH/4);
+    //int focusedWindow = 0;
 
     bool loop = true;
     int updater=0;

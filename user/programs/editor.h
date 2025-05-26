@@ -7,11 +7,12 @@
 // Define the "class" as a struct containing its data
 typedef struct {
     Window window;
-    int textLoc;
+    unsigned int text_xPos;
+    unsigned int text_yPos;
 } Editor;
 
 // Function to initialize a editor program
-void initializeEditor(Editor* instance, unsigned char* video, unsigned int window_height, unsigned int window_width);
+void initializeEditor(Editor* instance, Screen* VGA, unsigned int window_xPos, unsigned int window_yPos, unsigned int window_height, unsigned int window_width);
 
 // Updates editor according to the input
 void updateEditor(Editor* instance, const char* arr);
