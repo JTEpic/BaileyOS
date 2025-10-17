@@ -1,6 +1,6 @@
 ENTRY(_start)
-OUTPUT_FORMAT(elf32-i386) #binary or elf32-i386 or elf64-x86-64
-OUTPUT_ARCH(i386) #i386 or x86_64
+OUTPUT_FORMAT(elf64-x86-64) #binary or elf32-i386 or elf64-x86-64
+OUTPUT_ARCH(x86_64) #i386 or x86_64
 SECTIONS
 {
     . = 0x100000;

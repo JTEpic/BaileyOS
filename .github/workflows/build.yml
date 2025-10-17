@@ -1,11 +1,11 @@
 name: Build OS
 
 on:
-  schedule:
-    - cron: '0 0 1 * *'  # Run at 00:00 UTC on the 1st of every month
+  #schedule:
+  #  - cron: '0 0 1 * *'  # Run at 00:00 UTC on the 1st of every month
   push:
     branches:
-      - main  # Optional: Also run on push to main for testing
+      - main  # Run on push to main
   #pull_request:
     #branches:
       #- main  # Optional: Run on PRs to main
@@ -29,9 +29,9 @@ jobs:
         with:
           path: |
             ~/opt/cross
-          key: cross-compiler-${{ runner.os }}-i686-elf-${{ hashFiles('lib/gcc/**', 'lib/binutils-gdb/**') }}
+          key: cross-compiler-${{ runner.os }}-x86_64-elf-${{ hashFiles('lib/gcc/**', 'lib/binutils-gdb/**') }}
           restore-keys: |
-            cross-compiler-${{ runner.os }}-i686-elf-
+            cross-compiler-${{ runner.os }}-x86_64-elf-
 
       # Install dependencies if not cached, need to cache later
       - name: Install toolchain dependencies
@@ -45,7 +45,8 @@ jobs:
         if: steps.cache-toolchain.outputs.cache-hit != 'true'
         run: |
           export PREFIX="$HOME/opt/cross"
-          export TARGET=i686-elf
+          # i686-elf for 32bit or x86_64-elf for 64bit
+          export TARGET=x86_64-elf
           export PATH="$PREFIX/bin:$PATH"
 
           # Create build directories

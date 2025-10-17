@@ -6,6 +6,14 @@ system error interrupts (eg divide by 0)
 higher bit color mode
 64bit long mode,new compiler/binutils/qemu,currently splits 64bit variables into 32bit components
 
+From OSDEV
+If your kernel is bigger (or is expected to grow bigger) than this,
+you'll probably prefer to have the kernel above the 1MB barrier,
+which means you need to activate A20 gate and switch to Unreal Mode to load the kernel
+(with A20 alone, you cannot have more than 64K above 1MB).
+Note that BIOS will still be unable to write to memory above 1MB,
+so you need to read stuff in a buffer below 1MB and then perform a rep movsd to place the data where they ultimately should go.
+
 handle_default_interrupt only EOI PIC2 if part of it
 better drive number in boot loader
 flat binary to only elf
@@ -41,48 +49,24 @@ https://notisrac.github.io/FileToCArray/
 
 Cross Compiler:
 https://wiki.osdev.org/GCC_Cross-Compiler
-    Put extracted tar.gz into $HOME/src:
+    Put extracted tar.gz into $HOME/src to not interfere with system root files:
     https://ftp.gnu.org/gnu/binutils/
     https://ftp.gnu.org/gnu/gcc/
 https://github.com/bminor/binutils-gdb
 https://github.com/gcc-mirror/gcc
 
-Put Binutils and GCC source code into $HOME/src folder (github repo may not work), -j 8
+Put Binutils and GCC source code into $HOME/src folder (github repo may not work), -j 8, -j$(nproc)
 
 export PREFIX="$HOME/opt/cross"
-export TARGET=i686-elf
+i686-elf for 32bit or x86_64-elf for 64bit
+export TARGET=
 export PATH="$PREFIX/bin:$PATH"
 
-For Binutils:
-
-    cd $HOME/src
-
-    mkdir build-binutils
-    cd build-binutils
-    ../binutils-x.y.z/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror
-    make -j 4
-    make install
-
-    cd ..
-
-For GCC:
-
-    cd $HOME/src
-
-    # The $PREFIX/bin dir _must_ be in the PATH. We did that above.
-    which -- $TARGET-as || echo $TARGET-as is not in the PATH
-
-    mkdir build-gcc
-    cd build-gcc
-    ../gcc-x.y.z/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers
-    make -j 4 all-gcc
-    make -j 4 all-target-libgcc
-    make install-gcc
-    make install-target-libgcc
-
-Delete $HOME/src folder
+For Binutils and GCC:
+    make cross-compiler
+    Delete $HOME/src folder
 
 Verify:
-
+    exports listed above
     $HOME/opt/cross/bin/$TARGET-gcc --version
-    #i686-elf-gcc --version
+    #$TARGET-gcc --version
