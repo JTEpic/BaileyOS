@@ -15,6 +15,7 @@ VIDEO_MEMORY equ 0xb8000
 WHITE_ON_BLACK equ 0x0f ; the color byte for each character
 
 start:
+    ; Real Mode
     ;(register or segment) * 16 + offset (org is offset)
     cli ;clear interupts
     mov ax, 0x00 ;code segment location
@@ -34,24 +35,23 @@ start:
     call print
 
     call load_kernel
+
+    ; Can directly jmp to 64bit/long mode
+    
     jmp load_PM
 
     jmp $
 
 print:
     mov bx, 0
-
     .loop:
         lodsb
         cmp al, 0
         je .done
         call print_char
-
         jmp .loop
-
     .done:
         ret
-
 print_char:
     mov ah, 0eh
     int 0x10
@@ -99,6 +99,7 @@ load_PM:
     mov eax, cr0 ;cr0 holds protected mode enable
     or al, 1 ;set 1st bit to 1
     mov cr0, eax
+    ; Next Enable Paging or in PMmain?
 
     jmp CODE_OFFSET:PMmain
 
@@ -134,6 +135,7 @@ gdt_descriptor:
 
 [BITS 32]
 PMmain:
+    ; Protected Mode
     mov ax, DATA_OFFSET
     mov ds, ax
     mov es, ax
@@ -153,6 +155,39 @@ PMmain:
     ;prints Hi at beginning
     mov dword [0xb8000], 0x07690748
     call move_cursor_to_origin
+
+    
+    ; 64 Bit
+    ; Disable 32bit Paging if was enable
+    ;CR0_PAGING equ 1 << 31
+    ;mov eax, cr0
+    ;and eax, ~CR0_PAGING
+    ;mov cr0, eax
+
+    ; Set PAE Enable in CR4
+    ;CR4_PAE_ENABLE equ 1 << 5
+    ;mov eax, cr4
+    ;or eax, CR4_PAE_ENABLE
+    ;mov cr4, eax
+
+    ; Load CR3 with the address of the PML4
+
+    ; Enable long mode by setting the LME flag
+    ;EFER_MSR equ 0xC0000080
+    ;EFER_LM_ENABLE equ 1 << 8
+    ;mov ecx, EFER_MSR
+    ;rdmsr
+    ;or eax, EFER_LM_ENABLE
+    ;wrmsr
+
+    ; Enable Paging and Protected Mode (already done though)
+    ;CR0_PM_ENABLE equ 1 << 0
+    ;CR0_PG_ENABLE equ 1 << 31
+    ;mov eax, cr0
+    ;or eax, CR0_PG_ENABLE | CR0_PM_ENABLE   ; ensuring that PM is set will allow for jumping
+                                            ; from real mode to compatibility mode directly
+    ;mov cr0, eax
+    
 
     ; Copy kernel from 0x10000 to 0x100000 since loaded there before A20 gate, protected mode can access past 1MB now,
     ; does not work if kernel over 1MB in size
@@ -210,6 +245,13 @@ print_string_pm_done:
     ret
 
 MSG_PROT_MODE db "Launched in 32-bit Protected Mode", 0
+
+[BITS 64]
+LMmain:
+    ; Long Mode/Compatibility Mode (32bit allowed)
+    ;jmp CODE_OFFSET:KERNEL_START_ADDR
+    
+    jmp $
 
 times 510-($ - $$) db 0 ;fill sector
 dw 0xAA55 ;55AA but reversed, boot signature

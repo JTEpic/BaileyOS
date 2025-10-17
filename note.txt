@@ -14,6 +14,7 @@ which means you need to activate A20 gate and switch to Unreal Mode to load the 
 Note that BIOS will still be unable to write to memory above 1MB,
 so you need to read stuff in a buffer below 1MB and then perform a rep movsd to place the data where they ultimately should go.
 
+Uses bios not uefi
 handle_default_interrupt only EOI PIC2 if part of it
 better drive number in boot loader
 flat binary to only elf

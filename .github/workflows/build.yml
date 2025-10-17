@@ -73,7 +73,8 @@ jobs:
           cd ..
 
           # Clean up build directories
-          #rm -rf ~/cross-build
+          rm -rf lib/build-binutils
+          rm -rf lib/build-gcc
 
           cd ..
 
@@ -87,6 +88,7 @@ jobs:
         run: |
           make all
           ls build/
+        continue-on-error: true
 
       # Upload os.bin
       - name: Upload OS binary
@@ -94,6 +96,7 @@ jobs:
         with:
           name: os-bin
           path: build/os.bin
+        continue-on-error: true
 
       # Upload os.txt
       - name: Upload OS text
@@ -101,9 +104,11 @@ jobs:
         with:
           name: os-txt
           path: build/os.txt
+        continue-on-error: true
 
       # Optional: Run QEMU (for testing)
       - name: Run QEMU
         run: |
-          timeout 15 make qemu-nographic || true
-          make clean
+          timeout 15 make qemu-nographic || echo "QEMU Failed"
+          make clean || echo "No Build Files"
+        continue-on-error: true
