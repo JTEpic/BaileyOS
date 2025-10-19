@@ -73,7 +73,7 @@ load_kernel:
 
     ret
 
-; Assumes kernel is under 1MB size, unreal mode for >1MB kernel
+; Assumes kernel is under 1MB size, unreal mode for >1MB kernel or int 13 LBA in extended mode?
 disk_load:
     mov dh, 0x00  ;head 0
     mov dl, 0x80  ;read from first drive

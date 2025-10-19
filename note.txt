@@ -4,7 +4,7 @@ keyboard move cursor
 0xE0 on keyboard
 system error interrupts (eg divide by 0)
 higher bit color mode
-64bit long mode,new compiler/binutils/qemu,currently splits 64bit variables into 32bit components
+64bit long mode,currently splits 64bit variables into 32bit components
 
 From OSDEV
 If your kernel is bigger (or is expected to grow bigger) than this,
@@ -13,6 +13,7 @@ which means you need to activate A20 gate and switch to Unreal Mode to load the 
 (with A20 alone, you cannot have more than 64K above 1MB).
 Note that BIOS will still be unable to write to memory above 1MB,
 so you need to read stuff in a buffer below 1MB and then perform a rep movsd to place the data where they ultimately should go.
+or int 13 LBA extended mode in 32 bit protected mode?
 
 Uses bios not uefi
 handle_default_interrupt only EOI PIC2 if part of it

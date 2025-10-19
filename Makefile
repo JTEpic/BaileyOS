@@ -66,9 +66,11 @@ all:
 	#xxd $(BUILD)/os.bin >> $(BUILD)/os.txt
 
 
-	# Bootloader 4, 64bit, requires cross compiled 64bit binutils+gcc
+	# Bootloader 4, 64bit, requires cross compiled 64bit binutils+gcc, bash make.sh
+	nasm --version
 	nasm -f bin $(BOOT)/boot4.asm -o $(BUILD)/boot4.bin
-	nasm -f elf -g $(KERNEL_FOLDER)/kernel2.asm -o $(BUILD)/kernel2.asm.bin
+	nasm -f elf64 -g $(KERNEL_FOLDER)/kernel2.asm -o $(BUILD)/kernel2.asm.bin
+	x86_64-elf-gcc --version
 	x86_64-elf-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c $(KERNEL_FOLDER)/kernel.c -o $(BUILD)/kernel2.o
 
 	# x86_64-elf-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c $()/.c -o $(BUILD)/.o

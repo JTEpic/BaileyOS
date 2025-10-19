@@ -28,7 +28,7 @@ struct idt_ptr {
 
 // Set IDT entry
 void set_idt_entry(int index, unsigned int handler, unsigned short sel, unsigned char flags);
-// Initialize IDT, 32bit
+// Initialize IDT, 32bit?
 void init_idt();
 
 #endif
