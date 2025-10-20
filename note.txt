@@ -4,7 +4,6 @@ keyboard move cursor
 0xE0 on keyboard
 system error interrupts (eg divide by 0)
 higher bit color mode
-64bit long mode,currently splits 64bit variables into 32bit components
 
 From OSDEV
 If your kernel is bigger (or is expected to grow bigger) than this,
@@ -18,7 +17,7 @@ or int 13 LBA extended mode in 32 bit protected mode?
 Uses bios not uefi
 handle_default_interrupt only EOI PIC2 if part of it
 better drive number in boot loader
-flat binary to only elf
+flat binary to only elf? unless bootloader must be
 readd ORG 0 to boot
 
 (1)
@@ -48,6 +47,8 @@ Global Descriptor Table (GDT)
 https://wiki.osdev.org/Global_Descriptor_Table
 https://notisrac.github.io/FileToCArray/
 
+Long Mode / 64 bit
+https://wiki.osdev.org/Setting_Up_Long_Mode
 
 Cross Compiler:
 https://wiki.osdev.org/GCC_Cross-Compiler

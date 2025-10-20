@@ -43,6 +43,8 @@ unsigned char get8bitTo4bitImgChar(unsigned char val);
 
 // Max num sectors * 512 byte = 8192 bytes|16384
 void kernel_main(){
+    serial_message("Kernel Running\n");
+
     // Pointer to VGA memory
     //unsigned char *video = (unsigned char *)VIDEO_MEMORY;
     Screen VGA = {(unsigned char *)VIDEO_MEMORY, SCREEN_WIDTH, SCREEN_HEIGHT};
@@ -52,7 +54,7 @@ void kernel_main(){
     VGA.video[2] = 'T';
     delay(200000);
 
-    unsigned char msg[] = "Kernel running\n";
+    unsigned char msg[] = "Kernel Initialization\n";
     serial_message(msg);
     unsigned char msg2[] = "Glorious\n";
     serial_message(msg2);
@@ -64,10 +66,10 @@ void kernel_main(){
     setBackground(VGA.video,&img1,200);
     
     // Initialize PIC and IDT
-    init_pic();
-    init_idt();
-    asm volatile("sti"); // Enable interrupts
-    clearPIC(); // In case of input prior to initalization
+    //init_pic();
+    //init_idt();
+    //asm volatile("sti"); // Enable interrupts
+    //clearPIC(); // In case of input prior to initalization
 
     Editor editor1;
     initializeEditor(&editor1, &VGA, 3, 10, SCREEN_HEIGHT/4, SCREEN_WIDTH/4);
@@ -80,7 +82,7 @@ void kernel_main(){
     //inf loop
     while(loop){
         // Inputs
-        const unsigned char scan = get_last_scancode();
+        /*const unsigned char scan = get_last_scancode();
         if(scan!=0){
             const char* key = scancode_to_char(scan);
             serial_message(key);
@@ -99,7 +101,7 @@ void kernel_main(){
             }
 
             updateEditor(&editor1, key);
-        }
+        }*/
 
         // Updater after certain time span
         if(updater%(int)200E6 == 0){

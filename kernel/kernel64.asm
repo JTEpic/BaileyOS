@@ -9,14 +9,23 @@ VIDEO_MEMORY equ 0xb8000
 WHITE_ON_BLACK equ 0x0f ; the color byte for each character
 
 _start:
+    ; Clear Screen
+    mov     rdi, 0xB8000          ; destination = VGA text buffer
+    mov     rcx, 80*25            ; number of character cells (2000)
+    mov     rax, 0x0720           ; attribute+space = 0x07 (white on black) << 8 | 0x20 (space)
+                                   ; low byte = space, high byte = attribute
+    ; rep stosw writes AX to [RDI] and increments RDI by 2 each iteration
+    rep     stosw                ; clear the screen
+
     ;mov eax, 0xb8000
     ;mov byte [eax], 'C' ; Character
     ;mov byte [eax + 1], 0x4F ; Attribute byte
     ;mov dword [0xb8000], 0x07690748
     
-    mov ebx, MSG_PROT_MODE
-    call print_string_pm
+    mov rbx, MSG_KERNEL_MODE
+    call print_string_lm
     
+    ; Call/Enter Kernel
     call kernel_main
 
     cli
@@ -24,37 +33,32 @@ _start:
 
     jmp $
 
-print_string_pm:
+print_string_lm:
     ;pusha ; 32 bit, pushes all general‑purpose registers onto the stack, EAX to EDI
     ;mov edx, VIDEO_MEMORY
-
     push rbx
     push rdx
     mov rdx, VIDEO_MEMORY
-
-print_string_pm_loop:
+print_string_lm_loop:
     ;mov al, [ebx] ; [ebx] is the address of our character
     mov al, [rbx]
     mov ah, WHITE_ON_BLACK
-
     cmp al, 0 ; check if end of string
-    je print_string_pm_done
-
+    je print_string_lm_done
     ;mov [edx], ax ; store character + attribute in video memory
     ;add ebx, 1 ; next char
     ;add edx, 2 ; next video memory position
     mov[rdx], ax
     inc rbx
     add rdx, 2
-
-    jmp print_string_pm_loop
-
-print_string_pm_done:
+    jmp print_string_lm_loop
+print_string_lm_done:
     ;popa ; 32 bit, restores registers in reverse order
     pop rdx
     pop rbx
-
     ret
+
+MSG_KERNEL_MODE db "Printing in Kernel", 0
 
 ; Default handler
 global default_handler
@@ -145,7 +149,5 @@ keyboard_handler:
     ;sti
 
     iret
-
-MSG_PROT_MODE db "Printing in Kernel", 0
 
 times 510-($ - $$) db 0

@@ -36,7 +36,7 @@ start:
 
     call load_kernel
 
-    ; Can directly jmp to 64bit/long mode
+    ; Can directly jmp to 64bit/long mode, recommended not
     
     jmp load_PM
 
@@ -57,7 +57,7 @@ print_char:
     int 0x10
     ret
 
-message: db 'Bailey', 0
+message: db 'Bailey 16-bit', 0
 
 ; Load Kernel
 ;read from disk, CHS addressing, CH DH CL, Cylinder Head Sector
@@ -108,7 +108,6 @@ load_PM:
 gdt_start:
     dd 0x0
     dd 0x0
-
     ; Code Segment Descriptor
     gdt_code:
         dw 0xFFFF ;Limit
@@ -117,7 +116,6 @@ gdt_start:
         db 10011010b ;Access byte (binary)
         db 11001111b ;Flags
         db 0x00 ;Base
-
     ; Data Segment Descriptor
     gdt_data:
         dw 0xFFFF ;Limit
@@ -126,7 +124,6 @@ gdt_start:
         db 10010010b ;Access byte (binary)
         db 11001111b ;Flags
         db 0x00 ;Base
-
 gdt_end:
 
 gdt_descriptor:
@@ -150,44 +147,89 @@ PMmain:
     or al, 2
     out 0x92, al
     
-    ;mov ebx, MSG_PROT_MODE
-    ;call print_string_pm
+    mov ebx, MSG_PROT_MODE
+    call print_string_pm
     ;prints Hi at beginning
-    mov dword [0xb8000], 0x07690748
+    ;mov dword [0xb8000], 0x07690748
     call move_cursor_to_origin
 
-    
+
     ; 64 Bit
     ; Disable 32bit Paging if was enable
-    ;CR0_PAGING equ 1 << 31
-    ;mov eax, cr0
-    ;and eax, ~CR0_PAGING
-    ;mov cr0, eax
+    CR0_PAGING equ 1 << 31
+    mov eax, cr0
+    and eax, ~CR0_PAGING
+    mov cr0, eax
 
     ; Set PAE Enable in CR4
-    ;CR4_PAE_ENABLE equ 1 << 5
-    ;mov eax, cr4
-    ;or eax, CR4_PAE_ENABLE
-    ;mov cr4, eax
-
-    ; Load CR3 with the address of the PML4
-
-    ; Enable long mode by setting the LME flag
-    ;EFER_MSR equ 0xC0000080
-    ;EFER_LM_ENABLE equ 1 << 8
-    ;mov ecx, EFER_MSR
-    ;rdmsr
-    ;or eax, EFER_LM_ENABLE
-    ;wrmsr
-
-    ; Enable Paging and Protected Mode (already done though)
-    ;CR0_PM_ENABLE equ 1 << 0
-    ;CR0_PG_ENABLE equ 1 << 31
-    ;mov eax, cr0
-    ;or eax, CR0_PG_ENABLE | CR0_PM_ENABLE   ; ensuring that PM is set will allow for jumping
-                                            ; from real mode to compatibility mode directly
-    ;mov cr0, eax
+    CR4_PAE_ENABLE equ 1 << 5
+    mov eax, cr4
+    or eax, CR4_PAE_ENABLE
+    mov cr4, eax
     
+    ; Load CR3 with the address of the PML4
+    ; Clear Tables
+    PML4T_ADDR equ 0x1000
+    SIZEOF_PAGE_TABLE equ 4096
+    mov edi, PML4T_ADDR
+    mov cr3, edi       ; cr3 lets the CPU know where the page tables are
+
+    xor eax, eax
+    mov ecx, SIZEOF_PAGE_TABLE
+    rep stosd          ; writes 4 * SIZEOF_PAGE_TABLE bytes, which is enough space
+                       ; for the 4 page tables
+    mov edi, cr3       ; reset di back to the beginning of the page table
+    
+    ; Link first entries of each table
+    PML4T_ADDR equ 0x1000
+    PDPT_ADDR equ 0x2000
+    PDT_ADDR equ 0x3000
+    PT_ADDR equ 0x4000
+
+    ; the page table only uses certain parts of the actual address
+    PT_ADDR_MASK equ 0xffffffffff000
+    PT_PRESENT equ 1                 ; marks the entry as in use
+    PT_READABLE equ 2                ; marks the entry as r/w
+
+    ; edi was previously set to PML4T_ADDR
+    mov DWORD [edi], PDPT_ADDR & PT_ADDR_MASK | PT_PRESENT | PT_READABLE
+
+    mov edi, PDPT_ADDR
+    mov DWORD [edi], PDT_ADDR & PT_ADDR_MASK | PT_PRESENT | PT_READABLE
+
+    mov edi, PDT_ADDR
+    mov DWORD [edi], PT_ADDR & PT_ADDR_MASK | PT_PRESENT | PT_READABLE
+
+    ; Fill Page Table
+    ENTRIES_PER_PT equ 512
+    SIZEOF_PT_ENTRY equ 8
+    PAGE_SIZE equ 0x1000
+    mov edi, PT_ADDR
+    mov ebx, PT_PRESENT | PT_READABLE
+    mov ecx, ENTRIES_PER_PT      ; 1 full page table addresses 2MiB
+
+    .SetEntry:
+        mov DWORD [edi], ebx
+        add ebx, PAGE_SIZE
+        add edi, SIZEOF_PT_ENTRY
+        loop .SetEntry               ; Set the next entry.
+    
+    ; Enable long mode by setting the LME flag
+    EFER_MSR equ 0xC0000080
+    EFER_LM_ENABLE equ 1 << 8
+    mov ecx, EFER_MSR
+    rdmsr
+    or eax, EFER_LM_ENABLE
+    wrmsr
+    
+    ; Enable Paging and Protected Mode (already done though), compatibility mode
+    CR0_PM_ENABLE equ 1 << 0
+    CR0_PG_ENABLE equ 1 << 31
+    mov eax, cr0
+    or eax, CR0_PG_ENABLE | CR0_PM_ENABLE   ; ensuring that PM is set will allow for jumping
+                                            ; from real mode to compatibility mode directly
+    mov cr0, eax
+
 
     ; Copy kernel from 0x10000 to 0x100000 since loaded there before A20 gate, protected mode can access past 1MB now,
     ; does not work if kernel over 1MB in size
@@ -197,14 +239,18 @@ PMmain:
     cld
     rep movsb
 
-    jmp CODE_OFFSET:KERNEL_START_ADDR
+    ; Far jmp may leave compatibility mode
+    lgdt [GDT.Pointer]
+    jmp GDT.Code:LMmain
+    ;jmp CODE_OFFSET:LMmain
+    ; Best to setup long mode in bootloader first
+    ;jmp CODE_OFFSET:KERNEL_START_ADDR
 
     jmp $
 
 move_cursor_to_origin:
     ; Calculate cursor offset (0 for row=0, col=0)
     mov ecx, 0          ; Offset = row * 80 + col = 0
-
     ; Send high byte of cursor offset
     mov dx, 0x3D4       ; VGA index register
     mov al, 0x0E        ; Cursor location high register
@@ -212,7 +258,6 @@ move_cursor_to_origin:
     mov dx, 0x3D5       ; VGA data register
     mov al, ch          ; High byte of offset (ch = 0)
     out dx, al
-
     ; Send low byte of cursor offset
     mov dx, 0x3D4
     mov al, 0x0F        ; Cursor location low register
@@ -220,36 +265,93 @@ move_cursor_to_origin:
     mov dx, 0x3D5
     mov al, cl          ; Low byte of offset (cl = 0)
     out dx, al
-
     ret
-
 print_string_pm:
     pusha
     mov edx, VIDEO_MEMORY
-
 print_string_pm_loop:
     mov al, [ebx] ; [ebx] is the address of our character
     mov ah, WHITE_ON_BLACK
-
     cmp al, 0 ; check if end of string
     je print_string_pm_done
-
     mov [edx], ax ; store character + attribute in video memory
     add ebx, 1 ; next char
     add edx, 2 ; next video memory position
-
     jmp print_string_pm_loop
-
 print_string_pm_done:
     popa
     ret
 
 MSG_PROT_MODE db "Launched in 32-bit Protected Mode", 0
 
+;section .rodata
+GDT:
+    dq 0
+    .Code: equ $ - GDT
+        dq (1<<44) | (1<<47) | (1<<41) | (1<<43) | (1<<53)
+    .Data: equ $ - GDT
+        dq (1<<44) | (1<<47) | (1<<41)
+    .Pointer:
+        dw .Pointer - GDT - 1
+        dq GDT
+
+; Setup GDT
+; Access bits
+;PRESENT        equ 1 << 7
+;NOT_SYS        equ 1 << 4
+;EXEC           equ 1 << 3
+;DC             equ 1 << 2
+;RW             equ 1 << 1
+;ACCESSED       equ 1 << 0
+
+; Flags bits
+;GRAN_4K       equ 1 << 7
+;SZ_32         equ 1 << 6
+;LONG_MODE     equ 1 << 5
+
+;GDT:
+    ;.Null: equ $ - GDT
+    ;    dq 0
+    ;.Code: equ $ - GDT
+    ;    .Code.limit_lo: dw 0xffff
+    ;    .Code.base_lo: dw 0
+    ;    .Code.base_mid: db 0
+    ;    .Code.access: db PRESENT | NOT_SYS | EXEC | RW
+    ;    .Code.flags: db GRAN_4K | LONG_MODE | 0xF   ; Flags & Limit (high, bits 16-19)
+    ;    .Code.base_hi: db 0
+    ;.Data: equ $ - GDT
+    ;    .Data.limit_lo: dw 0xffff
+    ;    .Data.base_lo: dw 0
+    ;    .Data.base_mid: db 0
+    ;    .Data.access: db PRESENT | NOT_SYS | RW
+    ;    .Data.Flags: db GRAN_4K | SZ_32 | 0xF       ; Flags & Limit (high, bits 16-19)
+    ;    .Data.base_hi: db 0
+    ;.Pointer:
+    ;    dw $ - GDT - 1
+    ;    dq GDT
+
 [BITS 64]
 LMmain:
-    ; Long Mode/Compatibility Mode (32bit allowed)
+    ; Long Mode or Compatibility Mode(32bit allowed)?
+    cli ; Ensure interupts disabled
+    mov ax, DATA_OFFSET
+    ;mov ax, GDT.Data
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+
+    ;prints "okay", 64bit
+    ;mov rax, 0x2f592f412f4b2f4f
+    ;mov qword [0xb8000], rax
+
+    ;prints Hi at beginning, 32bit
+    ;mov dword [0xb8000], 0x07690748
+
     ;jmp CODE_OFFSET:KERNEL_START_ADDR
+    ; Cannot far jmp 64 to 64 bit address
+    jmp KERNEL_START_ADDR
     
     jmp $
 
